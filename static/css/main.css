@@ -1,0 +1,50 @@
+#app_root {
+  max-width: 1200px;
+  margin: 50px auto;
+}
+.toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.toolbar button {
+  margin: 5px;
+  min-width: 80px;
+  line-height: 25px;
+}
+
+.flex {
+  display: flex;
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.center {
+  justify-content: center;
+  align-items: center;
+}
+.col {
+  flex-direction: column;
+}
+.row {
+  flex-direction: row;
+}
+.mb20 {
+  margin-bottom: 20px;
+}
+.p5 {
+  padding: 5px;
+}
+.cursor {
+  cursor: pointer;
+}
+.svglattice {
+  position: relative;
+  border: 1px solid #ff4242;
+}
+.text-stroke {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
