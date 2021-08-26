@@ -9,6 +9,8 @@ try:
     from urllib.parse import urlencode
 except Exception:
     from urllib import urlencode
+import json
+import os
 import sys
 
 
@@ -33,6 +35,59 @@ def generate(text):
     return ret
 
 
+def gen_all_text():
+    with open('txt', 'rb') as fp:
+        text = fp.read().strip().decode('utf8')
+    for t in text:
+        code = json.dumps(t)[3:-1]
+        outfile = 'static/data/%s.json' % (code)
+        if os.path.exists(outfile):
+            continue
+
+        print(u'generating for %s %s' % (t, code))
+        ret = json.loads(generate(t.encode('utf8')))
+        lattice = ret['Info']['Lattice']
+        if not lattice:
+            # 该汉字不存在
+            continue
+
+        data = {
+            'steps': [],
+        }
+        for item in lattice:
+            if item['IsLine'] or not item['Strokes']:
+                continue
+            if item['Highlight']:
+                data['steps'].append(item['Strokes'])
+            data['stroke'] = item['Strokes']
+        with open(outfile, 'w') as fp:
+            json.dump(data, fp)
+
+
+def merge_json():
+    src_dir = 'static/data'
+    dest_dir = 'static/'
+
+    data = {}
+
+    files = os.listdir(src_dir)
+    for f in files:
+        if not f.endswith('.json'):
+            continue
+        code = f[0:4]
+        with open(os.path.join(src_dir, f), 'r') as fp:
+            item = json.load(fp)
+        data[code] = item['stroke']
+
+    with open(os.path.join(dest_dir, 'data.js'), 'w') as fp:
+        fp.write(';var ALL_DATA=')
+        fp.write(json.dumps(data))
+        fp.write(';')
+
+
 if __name__ == '__main__':
-    ret = generate(sys.argv[1])
-    print(ret)
+    if (len(sys.argv) > 1):
+        ret = generate(sys.argv[1])
+        print(ret)
+    else:
+        merge_json()

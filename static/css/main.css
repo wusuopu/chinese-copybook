@@ -2,11 +2,17 @@
   max-width: 1200px;
   margin: 50px auto;
 }
+p {
+  margin: 0;
+}
 .toolbar {
   position: fixed;
   top: 0;
+  right: 0;
   left: 0;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 .toolbar button {
   margin: 5px;

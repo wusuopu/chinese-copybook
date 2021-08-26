@@ -7,16 +7,18 @@ class TextInput extends React.Component {
   }
   render () {
     return (
-      <div className="flex col mb20">
+      <div className="flex col">
+        <p>该程序收集整理了常用的几千个汉字的楷书字帖供练习使用。</p>
+        <p>输入文字：</p>
         <textarea value={this.state.value} onChange={this.handleChange} />
         <div className="row">
-          <button onClick={this.handleUpdate}>更新</button>
+          <button onClick={this.handleUpdate}>生成字帖</button>
         </div>
       </div>
     )
   }
   componentDidMount () {
-    let value = localStorage.getItem('data') || ''
+    let value = localStorage.getItem('copybook:text') || ''
     this.setState({value}, () => {
       if (value) { this.handleUpdate() }
     })
@@ -25,15 +27,9 @@ class TextInput extends React.Component {
     this.setState({value: ev.target.value})
   }
   handleUpdate = () => {
-    let data
     let value = this.state.value.trim()
-    try {
-      data = JSON.parse(value)
-    } catch (e) {
-      data = {}
-    }
-    this.props.onUpdate && this.props.onUpdate(data)
-    localStorage.setItem('data', value)
+    this.props.onUpdate && this.props.onUpdate(value)
+    localStorage.setItem('copybook:text', value)
   }
 }
 class Lattice extends React.Component {
@@ -83,7 +79,7 @@ class Main extends React.Component {
       showStep: true,
       strokeItems: [],
       strokeSteps: [],
-      transform: '',
+      transform: 'translate(0, 36.9140625) scale(0.041015625, -0.041015625)',
       textWidth: 42,
       textHeight: 42,
       currentTextIndex: 0,
@@ -98,8 +94,10 @@ class Main extends React.Component {
           <button onClick={() => { this.setState({latticeSize: this.state.latticeSize - 5}) }}>-</button>
         </div>
 
-        {this.renderTextPreview()}
-        {this.renderTextSummary()}
+        <div className="mb20">
+          {this.renderTextPreview()}
+          {this.renderTextSummary()}
+        </div>
         <TextInput onUpdate={this.handleUpdate} />
       </div>
     )
@@ -110,8 +108,9 @@ class Main extends React.Component {
     }
     let data = []
     if (this.state.showStep) {
-      let size = 48
-      _.map(this.state.strokeSteps[this.state.currentTextIndex], (item, index) => {
+      let size = 80
+      _.reduce(this.state.strokeItems[this.state.currentTextIndex], (ret, item, index) => {
+        ret.push(item)
         data.push(
           <div key={index} className="p5 cursor">
             <Lattice size={size}>
@@ -121,12 +120,13 @@ class Main extends React.Component {
                 textWidth={this.state.textWidth}
                 textHeight={this.state.textHeight}
                 transform={this.state.transform}
-                paths={item}
+                paths={_.concat([], ret)}
               />
             </Lattice>
           </div>
         )
-      })
+        return ret
+      }, [])
     }
     return (
       <div className="flex col center mb20">
@@ -176,35 +176,16 @@ class Main extends React.Component {
       </div>
     )
   }
-  handleUpdate = (data) => {
-    let transform = ''
-    let translate = _.get(data, 'Info.Attribute.Offset')
-    if (!_.isEmpty(translate)) { transform = `${transform} translate(${translate.X}, ${translate.Y})` }
-    let scale = _.get(data, 'Info.Attribute.Scale')
-    if (!_.isEmpty(scale)) { transform = `${transform} scale(${scale.X}, -${scale.Y})` }
-
-    let textWidth = _.get(data, 'Info.Width')
-    let textHeight = _.get(data, 'Info.Height')
-
-    let i = 0
+  handleUpdate = (text) => {
     let strokeItems = []
-    let strokeSteps = []
-    _.map(_.get(data, 'Info.Lattice'), (item) => {
-      if (!strokeSteps[i]) { strokeSteps[i] = [] }
-      if (item.IsLine) {
-        i++
-      } else if (item.Highlight) {
-        strokeSteps[i].push(item.Strokes)
-      } else {
-        strokeItems.push(item.Strokes)
-      }
+    _.each(text, (t) => {
+      let code = t.charCodeAt(0).toString(16)
+      let items = ALL_DATA[code]
+      if (_.isEmpty(items)) { return }
+      strokeItems.push(items)
     })
 
     this.setState({
-      textWidth,
-      textHeight,
-      transform,
-      strokeSteps,
       strokeItems,
     })
   }
