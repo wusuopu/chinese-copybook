@@ -16,9 +16,9 @@ class TextInput extends React.Component {
     )
   }
   componentDidMount () {
-    let value = localStorage.getItem('data')
+    let value = localStorage.getItem('data') || ''
     this.setState({value}, () => {
-      this.handleUpdate()
+      if (value) { this.handleUpdate() }
     })
   }
   handleChange = (ev) => {
@@ -183,13 +183,13 @@ class Main extends React.Component {
     let scale = _.get(data, 'Info.Attribute.Scale')
     if (!_.isEmpty(scale)) { transform = `${transform} scale(${scale.X}, -${scale.Y})` }
 
-    let textWidth = data.Info.Width
-    let textHeight = data.Info.Height
+    let textWidth = _.get(data, 'Info.Width')
+    let textHeight = _.get(data, 'Info.Height')
 
     let i = 0
     let strokeItems = []
     let strokeSteps = []
-    _.map(data.Info.Lattice, (item) => {
+    _.map(_.get(data, 'Info.Lattice'), (item) => {
       if (!strokeSteps[i]) { strokeSteps[i] = [] }
       if (item.IsLine) {
         i++
