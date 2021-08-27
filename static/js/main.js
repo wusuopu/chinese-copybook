@@ -78,7 +78,6 @@ class Main extends React.Component {
       latticeSize: 300,
       showStep: true,
       strokeItems: [],
-      strokeSteps: [],
       transform: 'translate(0, 36.9140625) scale(0.041015625, -0.041015625)',
       textWidth: 42,
       textHeight: 42,
@@ -92,6 +91,8 @@ class Main extends React.Component {
           <button onClick={() => { this.setState({showStep: !this.state.showStep}) }}>显示笔顺</button>
           <button onClick={() => { this.setState({latticeSize: this.state.latticeSize + 5}) }}>+</button>
           <button onClick={() => { this.setState({latticeSize: this.state.latticeSize - 5}) }}>-</button>
+          <button onClick={this.prevWord}>&lt;</button>
+          <button onClick={this.nextWord}>&gt;</button>
         </div>
 
         <div className="mb20">
@@ -175,6 +176,16 @@ class Main extends React.Component {
         {data}
       </div>
     )
+  }
+  prevWord = () => {
+    if (this.state.currentTextIndex > 0) {
+      this.setState({currentTextIndex: this.state.currentTextIndex - 1})
+    }
+  }
+  nextWord = () => {
+    if (this.state.currentTextIndex < (this.state.strokeItems.length - 1)) {
+      this.setState({currentTextIndex: this.state.currentTextIndex + 1})
+    }
   }
   handleUpdate = (text) => {
     let strokeItems = []

@@ -17,8 +17,8 @@ p {
 }
 .toolbar button {
   margin: 5px;
-  min-width: 80px;
-  line-height: 25px;
+  min-width: 60px;
+  height: 25px;
 }
 
 .flex {
