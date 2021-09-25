@@ -49,6 +49,21 @@ class Lattice extends React.Component {
 }
 class TextStroke extends React.Component {
   render () {
+    let size = this.props.size || 48
+
+    return (
+      <div className={`text-stroke ${this.props.className}`} style={{width: size, height: size}}>
+        {this.renderText()}
+      </div>
+    )
+  }
+  renderText () {
+    if (this.props.svgUrl) {
+      return (
+        <img src={this.props.svgUrl} />
+      )
+    }
+
     let color = this.props.color || '#ff4242'
     let size = this.props.size || 48
     let { textWidth, textHeight } = this.props
@@ -60,13 +75,11 @@ class TextStroke extends React.Component {
       )
     })
     return (
-      <div className="text-stroke" style={{width: size, height: size}}>
-        <svg viewBox={viewBox} style={{width: size, height: size}}>
-          <g transform={this.props.transform}>
-            {paths}
-          </g>
-        </svg>
-      </div>
+      <svg viewBox={viewBox} style={{width: size, height: size}}>
+        <g transform={this.props.transform}>
+          {paths}
+        </g>
+      </svg>
     )
   }
 }
@@ -76,19 +89,27 @@ class Main extends React.Component {
     super(props)
     this.state = {
       latticeSize: 300,
-      showStep: true,
-      strokeItems: [],
+      showStep: false,
+      strokeItems: [],    // 笔顺svg
+      charCodes: [],
       transform: 'translate(0, 36.9140625) scale(0.041015625, -0.041015625)',
       textWidth: 42,
       textHeight: 42,
       currentTextIndex: 0,
+      fontFamily: 'qfkt',
     }
   }
   render () {
     return (
       <div className="flex col">
         <div className="toolbar row">
-          <button onClick={() => { this.setState({showStep: !this.state.showStep}) }}>显示笔顺</button>
+          <select value={this.state.fontFamily} onChange={(ev) => {
+            this.setState({fontFamily: ev.target.value})
+          }}>
+            <option value="qfkt">手写楷体</option>
+            <option value="xingshu">华章行书</option>
+            <option value="FZKTJW">楷体</option>
+          </select>
           <button onClick={() => { this.setState({latticeSize: this.state.latticeSize + 5}) }}>+</button>
           <button onClick={() => { this.setState({latticeSize: this.state.latticeSize - 5}) }}>-</button>
           <button onClick={this.prevWord}>&lt;</button>
@@ -104,9 +125,15 @@ class Main extends React.Component {
     )
   }
   renderTextPreview () {
-    if (_.isEmpty(this.state.strokeItems[this.state.currentTextIndex])) {
+    let charCodes = _.filter(this.state.charCodes, (code) => {
+      let sets = this.state.fontFamily === 'xingshu' ? ALL_XS_CHARS : ALL_KT_CHARS
+      return sets[code]
+    })
+    let code = charCodes[this.state.currentTextIndex]
+    if (_.isEmpty(charCodes) || !code) {
       return null
     }
+
     let data = []
     if (this.state.showStep) {
       let size = 80
@@ -129,17 +156,21 @@ class Main extends React.Component {
         return ret
       }, [])
     }
+
+    let svgUrl = `static/fonts-svg/${this.state.fontFamily}/${code}.svg`
     return (
       <div className="flex col center mb20">
         <div className="flex row">
           <Lattice size={this.state.latticeSize}>
             <TextStroke
+              className={this.state.fontFamily}
               color="#555555"
               size={this.state.latticeSize}
               textWidth={this.state.textWidth}
               textHeight={this.state.textHeight}
               transform={this.state.transform}
               paths={this.state.strokeItems[this.state.currentTextIndex]}
+              svgUrl={svgUrl}
             />
           </Lattice>
         </div>
@@ -150,22 +181,29 @@ class Main extends React.Component {
     )
   }
   renderTextSummary () {
-    if (_.isEmpty(this.state.strokeItems)) {
+    let charCodes = _.filter(this.state.charCodes, (code) => {
+      let sets = this.state.fontFamily === 'xingshu' ? ALL_XS_CHARS : ALL_KT_CHARS
+      return sets[code]
+    })
+    if (_.isEmpty(charCodes)) {
       return null
     }
+
     let data = []
     let size = 48
-    _.map(this.state.strokeItems, (item, index) => {
+    _.map(charCodes, (code, index) => {
+      let svgUrl = `static/fonts-svg/${this.state.fontFamily}/${code}.svg`
       data.push(
         <div key={index} className="p5 cursor" onClick={() => {this.setState({currentTextIndex: index})}}>
           <Lattice size={size}>
             <TextStroke
+              className={this.state.fontFamily}
               color="#555555"
               size={size}
               textWidth={this.state.textWidth}
               textHeight={this.state.textHeight}
               transform={this.state.transform}
-              paths={item}
+              svgUrl={svgUrl}
             />
           </Lattice>
         </div>
@@ -188,17 +226,12 @@ class Main extends React.Component {
     }
   }
   handleUpdate = (text) => {
-    let strokeItems = []
+    let charCodes = []
     _.each(text, (t) => {
       let code = t.charCodeAt(0).toString(16)
-      let items = ALL_DATA[code]
-      if (_.isEmpty(items)) { return }
-      strokeItems.push(items)
+      charCodes.push(code)
     })
-
-    this.setState({
-      strokeItems,
-    })
+    this.setState({charCodes})
   }
 }
 

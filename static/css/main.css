@@ -55,3 +55,16 @@ p {
   top: 0;
   left: 0;
 }
+.text-stroke img {
+  width: 100%;
+  height: 100%;
+}
+.text-stroke.qfkt img {
+  transform: translateY(-10%);
+}
+.text-stroke.xingshu img {
+  transform: translateY(-4%);
+}
+.text-stroke.FZKTJW img {
+  transform: translateY(-4%);
+}
