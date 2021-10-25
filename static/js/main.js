@@ -221,7 +221,7 @@ class Main extends React.Component {
     }
   }
   nextWord = () => {
-    if (this.state.currentTextIndex < (this.state.strokeItems.length - 1)) {
+    if (this.state.currentTextIndex < (this.state.charCodes.length - 1)) {
       this.setState({currentTextIndex: this.state.currentTextIndex + 1})
     }
   }
